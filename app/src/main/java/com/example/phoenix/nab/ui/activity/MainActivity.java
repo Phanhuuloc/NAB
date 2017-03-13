@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.example.phoenix.nab.R;
 import com.example.phoenix.nab.common.Decompress;
+import com.example.phoenix.nab.common.IFileHandle;
 import com.example.phoenix.nab.ui.presenter.DownloadFilePresenter;
 import com.example.phoenix.nab.ui.view.DownloadFileView;
 
@@ -22,7 +23,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends BaseActivity implements DownloadFileView {
+public class MainActivity extends BaseActivity implements DownloadFileView, IFileHandle {
     public static final String TAG = MainActivity.class.getSimpleName();
 
     DownloadFilePresenter presenter;
@@ -71,7 +72,7 @@ public class MainActivity extends BaseActivity implements DownloadFileView {
     public void handleZipFile(String result) {
         this.file = result;
         if (isStoragePermissionGranted()) {
-            Decompress unzip = new Decompress(result, Environment.getExternalStorageDirectory().getPath());
+            Decompress unzip = new Decompress(result, FILE_UNZIP_PATH);
             unzip.unzip();
         } else {
             Log.v(TAG, "Permission is revoked");
@@ -88,7 +89,8 @@ public class MainActivity extends BaseActivity implements DownloadFileView {
             } else {
                 return false;
             }
-        } else { //permission is automatically granted on sdk<23 upon installation
+        } else {
+            //permission is automatically granted on sdk<23 upon installation
             Log.v(TAG, "Permission is granted");
             return true;
         }

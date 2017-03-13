@@ -1,11 +1,11 @@
 package com.example.phoenix.nab.data.net;
 
 import android.content.Context;
-import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.example.phoenix.nab.NABApplication;
+import com.example.phoenix.nab.common.IFileHandle;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -30,12 +30,11 @@ import okhttp3.ResponseBody;
  * Implements {@link java.util.concurrent.Callable} so when executed asynchronously can
  * return a value.
  */
-class ApiConnection implements Callable<String> {
+class ApiConnection implements Callable<String>, IFileHandle {
     public static final String TAG = ApiConnection.class.getSimpleName();
     private static final String CONTENT_TYPE_LABEL = "Content-Type";
     private static final String CONTENT_TYPE_VALUE_JSON = "application/json; charset=utf-8";
-    private static final String FILE_PATH = Environment.getDataDirectory().getPath() + "/images.zip";
-    private static final String FILE_PATH2 = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/file.zip";
+
     Context context = NABApplication.get().getApplicationContext();
     private URL url;
     private String res;
@@ -76,7 +75,7 @@ class ApiConnection implements Callable<String> {
 
             writeResponseBodyToDisk(response.body());
             Log.v(TAG, response.networkResponse().headers().toString());
-            this.res = FILE_PATH2;
+            this.res = FILE_DOWNLOAD_PATH;
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -88,7 +87,7 @@ class ApiConnection implements Callable<String> {
         byte data[] = new byte[1024 * 4];
         long fileSize = body.contentLength();
         InputStream bis = new BufferedInputStream(body.byteStream(), 1024 * 8);
-        File outputFile = new File(FILE_PATH2);
+        File outputFile = new File(FILE_DOWNLOAD_PATH);
         OutputStream output = new FileOutputStream(outputFile);
         long total = 0;
         long startTime = System.currentTimeMillis();
@@ -140,7 +139,7 @@ class ApiConnection implements Callable<String> {
                 if (!response.isSuccessful()) {
                     throw new IOException("Failed to download file: " + response);
                 }
-                FileOutputStream fos = new FileOutputStream(FILE_PATH);
+                FileOutputStream fos = new FileOutputStream(FILE_DOWNLOAD_PATH);
                 fos.write(response.body().bytes());
                 fos.close();
             }
@@ -157,41 +156,41 @@ class ApiConnection implements Callable<String> {
         return okHttpClient;
     }
 
-    public void downloadFileSync(String downloadUrl) throws Exception {
+//    public void downloadFileSync(String downloadUrl) throws Exception {
+//
+//        OkHttpClient client = createClient();
+//        Request request = new Request.Builder()
+//                .url("http://116.118.113.95:5000/fsdownload/0S628zt2x/JSON files.zip")
+//                .build();
+//        Response response = client.newCall(request).execute();
+//        if (!response.isSuccessful()) {
+//            throw new IOException("Failed to download file: " + response);
+//        }
+//        FileOutputStream fos = new FileOutputStream(FILE_PATH);
+//        fos.write(response.body().bytes());
+//        fos.close();
+//    }
 
-        OkHttpClient client = createClient();
-        Request request = new Request.Builder()
-                .url("http://116.118.113.95:5000/fsdownload/0S628zt2x/JSON files.zip")
-                .build();
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new IOException("Failed to download file: " + response);
-        }
-        FileOutputStream fos = new FileOutputStream(FILE_PATH);
-        fos.write(response.body().bytes());
-        fos.close();
-    }
-
-    public void downloadFileAsync(final String downloadUrl) throws Exception {
-        OkHttpClient client = createClient();
-        Request request = new Request.Builder()
-                .url("http://116.118.113.95:5000/fsdownload/0S628zt2x/JSON files.zip")
-                .build();
-        client.newCall(request).enqueue(new Callback() {
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-            }
-
-            public void onResponse(Call call, Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Failed to download file: " + response);
-                }
-                FileOutputStream fos = new FileOutputStream(FILE_PATH);
-                fos.write(response.body().bytes());
-                fos.close();
-            }
-        });
-    }
+//    public void downloadFileAsync(final String downloadUrl) throws Exception {
+//        OkHttpClient client = createClient();
+//        Request request = new Request.Builder()
+//                .url("http://116.118.113.95:5000/fsdownload/0S628zt2x/JSON files.zip")
+//                .build();
+//        client.newCall(request).enqueue(new Callback() {
+//            public void onFailure(Call call, IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//            public void onResponse(Call call, Response response) throws IOException {
+//                if (!response.isSuccessful()) {
+//                    throw new IOException("Failed to download file: " + response);
+//                }
+//                FileOutputStream fos = new FileOutputStream(FILE_PATH);
+//                fos.write(response.body().bytes());
+//                fos.close();
+//            }
+//        });
+//    }
 
 
     @Override
