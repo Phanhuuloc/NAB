@@ -33,13 +33,26 @@ public class GalleryPresenter implements Presenter {
 
     }
 
-    public void fetchImage(String url) {
-        fetchImageUseCase.execute(new GetBrandIndexObserver(), FetchImageUseCase.Params.forFetchImg(url));
+    public void setView(GalleryView view) {
+        this.view = view;
+    }
+
+    public void fetchImage(String url, int pos) {
+        fetchImageUseCase.execute(new GetBrandIndexObserver(url, pos), FetchImageUseCase.Params.forFetchImg(url));
     }
 
     private class GetBrandIndexObserver extends DefaultObserver<Bitmap> {
+        private final String url;
+        private final int pos;
+
+        public GetBrandIndexObserver(String url, int pos) {
+            this.url = url;
+            this.pos = pos;
+        }
+
         @Override
         public void onNext(Bitmap result) {
+            view.addImage(result, url, pos);
         }
 
         @Override

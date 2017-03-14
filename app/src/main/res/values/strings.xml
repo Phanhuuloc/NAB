@@ -6,4 +6,5 @@
     <string name="dialog_option_ok">ok</string>
     <string name="dialog_option_cancel">cancel</string>
     <string name="title_activity_main22">Main22Activity</string>
+    <string name="download_fail">Image download fail!</string>
 </resources>

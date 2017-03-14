@@ -86,7 +86,6 @@ public class GalleryActivity extends AppCompatActivity {
     private void setupViewPager() {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String key = entry.getKey();
-
             if (key.contains("._")) {
                 continue;
             }

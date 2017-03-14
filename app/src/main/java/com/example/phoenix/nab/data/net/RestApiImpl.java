@@ -2,6 +2,7 @@ package com.example.phoenix.nab.data.net;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
@@ -9,6 +10,7 @@ import com.example.phoenix.nab.common.IFileHandle;
 import com.example.phoenix.nab.data.Download;
 import com.example.phoenix.nab.data.exception.NetworkConnectionException;
 
+import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,9 +26,6 @@ import okhttp3.Response;
 
 public class RestApiImpl implements RestApi, IFileHandle {
 
-    /**
-     * Constructor of the class
-     */
     public RestApiImpl() {
 
     }
@@ -35,34 +34,18 @@ public class RestApiImpl implements RestApi, IFileHandle {
         return Instance.instance;
     }
 
-    public Observable<String> downloadFileNon(final String url) {
-        return Observable.create(emitter -> {
-            if (isThereInternetConnection()) {
-                try {
-                    String response = downloadFileFromApi(url);
-                    if (response != null) {
-                        emitter.onNext(response);
-                        emitter.onComplete();
-                    } else {
-                        emitter.onError(new NetworkConnectionException());
-                    }
-                } catch (Exception e) {
-                    emitter.onError(new NetworkConnectionException(e.getCause()));
-                }
-            } else {
-                emitter.onError(new NetworkConnectionException());
-            }
-        });
-    }
-
     @Override
     public Observable<Bitmap> fetchImage(String url) {
         return Observable.create(emitter -> {
             if (isThereInternetConnection()) {
                 try {
-                    Bitmap response = fetchImageFromApi(url);
-                    if (response != null) {
-                        emitter.onNext(response);
+                    Response response = fetchImageFromApi(url);
+                    if (response.isSuccessful()) {
+                        InputStream inputStream = response.body().byteStream();
+
+                        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, 8192);
+                        Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream);
+                        emitter.onNext(bitmap);
                         emitter.onComplete();
                     } else {
                         emitter.onError(new NetworkConnectionException());
@@ -86,9 +69,10 @@ public class RestApiImpl implements RestApi, IFileHandle {
                         if (response.isSuccessful()) {
                             input = response.body().byteStream();
                             long fileSize = response.body().contentLength();
+                            byte data[] = new byte[1024];
 
                             output = new FileOutputStream(FILE_DOWNLOAD_PATH);
-                            byte data[] = new byte[1024];
+
                             int totalFileSize = (int) (fileSize / (Math.pow(1024, 1)));
                             long total = 0;
                             int count;
@@ -134,14 +118,10 @@ public class RestApiImpl implements RestApi, IFileHandle {
         return ApiConnection.createGET(url).callDownloadFile();
     }
 
-    private Bitmap fetchImageFromApi(String url) throws MalformedURLException {
+    private Response fetchImageFromApi(String url) throws MalformedURLException {
         return ApiConnection.createGET(url).callFetchImageSync();
     }
 
-    public String downloadFileFromApi(String url) throws MalformedURLException {
-        return ApiConnection.createGET(url).callDownloadSync();
-
-    }
 
     /**
      * Checks if the device has any active internet connection.

@@ -7,6 +7,7 @@ import android.os.Environment;
  */
 
 public interface IFileHandle {
+    String BASE_CACHE_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/cache/";
     String BASE_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
     String ZIP_EXTENSION = ".zip";
     String FILE_NAME = "images";

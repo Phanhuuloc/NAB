@@ -1,30 +1,42 @@
 package com.example.phoenix.nab.ui.fragment;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.phoenix.nab.R;
+import com.example.phoenix.nab.common.DiskLruImageCache;
+import com.example.phoenix.nab.common.IFileHandle;
 import com.example.phoenix.nab.common.ReadJsonFile;
+import com.example.phoenix.nab.data.ImgData;
+import com.example.phoenix.nab.ui.adapter.ImageAdapter;
 import com.example.phoenix.nab.ui.presenter.GalleryPresenter;
 import com.example.phoenix.nab.ui.view.GalleryView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Phoenix on 3/13/17.
  */
 
-public class GalleryFragment extends BaseFragment implements GalleryView {
+public class GalleryFragment extends BaseFragment implements GalleryView, IFileHandle {
 
     public static final String TAG = GalleryFragment.class.getSimpleName();
     public static final String FILE = "FILE";
 
+    ImageAdapter adapter;
+    RecyclerView recyclerView;
     GalleryPresenter presenter;
     private String files;
 
@@ -38,13 +50,15 @@ public class GalleryFragment extends BaseFragment implements GalleryView {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_gallery, container, false);
-        RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
+        recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
         initialize();
         return rootView;
     }
 
     private void initialize() {
+        presenter.setView(this);
         initData();
+        initializeRecyclerView();
     }
 
     private void initData() {
@@ -60,13 +74,41 @@ public class GalleryFragment extends BaseFragment implements GalleryView {
         super.lazyFetchData();
         if (null != files) {
             JSONArray jsonArray = ReadJsonFile.arrayFrom(files);
+            List<ImgData> items = new ArrayList<>();
+
             for (int i = 0; i < jsonArray.length(); i++) {
-                try {
-                    presenter.fetchImage(jsonArray.getString(i));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                items.add(new ImgData());
+            }
+            adapter.setItems(items);
+            loadImage(jsonArray);
+        }
+    }
+
+    private void loadImage(JSONArray jsonArray) {
+        for (int i = 0; i < 10; i++) {
+            try {
+                presenter.fetchImage(jsonArray.getString(i), i);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         }
+    }
+
+    private void initializeRecyclerView() {
+        adapter = new ImageAdapter(getActivity());
+        StaggeredGridLayoutManager lm = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        lm.setOrientation(LinearLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(lm);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    public void addImage(Bitmap result, String url, int pos) {
+        String newString = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+        String key = newString.replaceAll("[\\-\\+\\.\\^:,]", "");
+        Log.i(TAG, key);
+        DiskLruImageCache.getInstance().put(key, result);
+        adapter.replace(DiskLruImageCache.getInstance().getBitmap(key), pos);
     }
 }
