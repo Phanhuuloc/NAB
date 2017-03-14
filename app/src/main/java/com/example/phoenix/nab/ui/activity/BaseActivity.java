@@ -15,9 +15,8 @@ import android.support.v7.app.AppCompatActivity;
  */
 public abstract class BaseActivity extends AppCompatActivity {
 
-
-    public static void start(Context context, Class<?> cls, Bundle bundle) {
-        Intent intent = new Intent(context, cls);
+    public static <T extends Activity> void start(Context context, Class<T> clazz, Bundle bundle) {
+        Intent intent = new Intent(context, clazz);
         if (null != bundle) {
             intent.putExtras(bundle);
         }

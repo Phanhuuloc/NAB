@@ -1,6 +1,8 @@
 package com.example.phoenix.nab.data.net;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -18,8 +20,6 @@ import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -37,7 +37,6 @@ class ApiConnection implements Callable<String>, IFileHandle {
 
     Context context = NABApplication.get().getApplicationContext();
     private URL url;
-    private String res;
 
     private ApiConnection(String url) throws MalformedURLException {
         this.url = new URL(url);
@@ -54,13 +53,40 @@ class ApiConnection implements Callable<String>, IFileHandle {
      * @return A string res
      */
     @Nullable
-    String requestSyncCall() {
-        connectToApiSync();
-        return res;
+    String callDownloadSync() {
+        return downloadFileSync();
     }
 
+    @Nullable
+    Bitmap callFetchImageSync() {
+        return fetchImageSync();
+    }
 
-    private void connectToApiSync() {
+    @Nullable
+    public Response callDownloadFile() {
+        return downloadFileSyncResponse();
+    }
+
+    private Response downloadFileSyncResponse() {
+        OkHttpClient okHttpClient = this.createClient();
+        final Request request = new Request.Builder()
+                .url(this.url)
+                .addHeader("Accept-Encoding", "gzip")
+                .build();
+
+        try {
+            Response response = okHttpClient.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new IOException("Failed to download file: " + response);
+            }
+            return response;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String downloadFileSync() {
         OkHttpClient okHttpClient = this.createClient();
         final Request request = new Request.Builder()
                 .url(this.url)
@@ -75,11 +101,35 @@ class ApiConnection implements Callable<String>, IFileHandle {
 
             writeResponseBodyToDisk(response.body());
             Log.v(TAG, response.networkResponse().headers().toString());
-            this.res = FILE_DOWNLOAD_PATH;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return FILE_DOWNLOAD_PATH;
+    }
+
+    private Bitmap fetchImageSync() {
+        Bitmap bitmap = null;
+        OkHttpClient okHttpClient = this.createClient();
+        final Request request = new Request.Builder()
+                .url(this.url)
+                .build();
+
+        try {
+            Response response = okHttpClient.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new IOException("Failed to fetch image: " + response);
+            }
+
+            ResponseBody in = response.body();
+            InputStream inputStream = in.byteStream();
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+            bitmap = BitmapFactory.decodeStream(bufferedInputStream);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return bitmap;
     }
 
     private boolean writeResponseBodyToDisk(ResponseBody body) throws IOException {
@@ -93,57 +143,18 @@ class ApiConnection implements Callable<String>, IFileHandle {
         long startTime = System.currentTimeMillis();
         int timeCount = 1;
         while ((count = bis.read(data)) != -1) {
-
             total += count;
-//            totalFileSize = (int) (fileSize / (Math.pow(1024, 2)));
             double current = Math.round(total / (Math.pow(1024, 2)));
-
             int progress = (int) ((total * 100) / fileSize);
-
             long currentTime = System.currentTimeMillis() - startTime;
-
-//            Download download = new Download();
-//            download.setTotalFileSize(totalFileSize);
-
-            if (currentTime > 1000 * timeCount) {
-
-//                download.setCurrentFileSize((int) current);
-//                download.setProgress(progress);
-//                sendNotification(download);
-//                timeCount++;
-            }
-
             output.write(data, 0, count);
         }
-//        onDownloadComplete();
         output.flush();
         output.close();
         bis.close();
 
 
         return true;
-    }
-
-    private void connectToApiAsync() {
-        OkHttpClient okHttpClient = this.createClient();
-        final Request request = new Request.Builder()
-                .url(this.url)
-                .build();
-
-        okHttpClient.newCall(request).enqueue(new Callback() {
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-            }
-
-            public void onResponse(Call call, Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Failed to download file: " + response);
-                }
-                FileOutputStream fos = new FileOutputStream(FILE_DOWNLOAD_PATH);
-                fos.write(response.body().bytes());
-                fos.close();
-            }
-        });
     }
 
     private OkHttpClient createClient() {
@@ -156,45 +167,9 @@ class ApiConnection implements Callable<String>, IFileHandle {
         return okHttpClient;
     }
 
-//    public void downloadFileSync(String downloadUrl) throws Exception {
-//
-//        OkHttpClient client = createClient();
-//        Request request = new Request.Builder()
-//                .url("http://116.118.113.95:5000/fsdownload/0S628zt2x/JSON files.zip")
-//                .build();
-//        Response response = client.newCall(request).execute();
-//        if (!response.isSuccessful()) {
-//            throw new IOException("Failed to download file: " + response);
-//        }
-//        FileOutputStream fos = new FileOutputStream(FILE_PATH);
-//        fos.write(response.body().bytes());
-//        fos.close();
-//    }
-
-//    public void downloadFileAsync(final String downloadUrl) throws Exception {
-//        OkHttpClient client = createClient();
-//        Request request = new Request.Builder()
-//                .url("http://116.118.113.95:5000/fsdownload/0S628zt2x/JSON files.zip")
-//                .build();
-//        client.newCall(request).enqueue(new Callback() {
-//            public void onFailure(Call call, IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//            public void onResponse(Call call, Response response) throws IOException {
-//                if (!response.isSuccessful()) {
-//                    throw new IOException("Failed to download file: " + response);
-//                }
-//                FileOutputStream fos = new FileOutputStream(FILE_PATH);
-//                fos.write(response.body().bytes());
-//                fos.close();
-//            }
-//        });
-//    }
-
-
     @Override
     public String call() throws Exception {
-        return requestSyncCall();
+        return callDownloadSync();
     }
+
 }

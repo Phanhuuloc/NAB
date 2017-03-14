@@ -1,5 +1,8 @@
 package com.example.phoenix.nab.data.repository;
 
+import android.graphics.Bitmap;
+
+import com.example.phoenix.nab.data.Download;
 import com.example.phoenix.nab.data.net.RestApi;
 
 import io.reactivex.Observable;
@@ -18,12 +21,11 @@ public class ApiMediator {
         this.restApi = restApi;
     }
 
-    public Observable<String> downloadFile(final String url) {
+    public Observable<Download> downloadFile(final String url) {
         return this.restApi.downloadFile(url);
-//                .doOnNext(s -> {
-//                    Decompress unzip = new Decompress(s, Environment.getExternalStorageDirectory().getPath());
-//                    unzip.unzip();
-//                });
     }
 
+    public Observable<Bitmap> fetchImage(String url) {
+        return this.restApi.fetchImage(url);
+    }
 }

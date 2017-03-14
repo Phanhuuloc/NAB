@@ -1,5 +1,6 @@
 package com.example.phoenix.nab.ui.presenter;
 
+import com.example.phoenix.nab.data.Download;
 import com.example.phoenix.nab.domain.interactor.DefaultObserver;
 import com.example.phoenix.nab.domain.interactor.DownloadFileUseCase;
 import com.example.phoenix.nab.ui.view.DownloadFileView;
@@ -39,10 +40,10 @@ public class DownloadFilePresenter implements Presenter {
                 DownloadFileUseCase.Params.forDownload(url));
     }
 
-    private class GetBrandIndexObserver extends DefaultObserver<String> {
+    private class GetBrandIndexObserver extends DefaultObserver<Download> {
         @Override
-        public void onNext(String result) {
-            DownloadFilePresenter.this.view.handleZipFile(result);
+        public void onNext(Download result) {
+            DownloadFilePresenter.this.view.updateProgress(result);
         }
 
         @Override
@@ -51,7 +52,7 @@ public class DownloadFilePresenter implements Presenter {
 
         @Override
         public void onError(Throwable exception) {
-
+//            DownloadFilePresenter.this.view.handleZipFile(result);
         }
     }
 }

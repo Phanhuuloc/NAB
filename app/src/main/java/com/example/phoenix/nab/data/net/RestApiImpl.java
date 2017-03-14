@@ -1,20 +1,28 @@
 package com.example.phoenix.nab.data.net;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.example.phoenix.nab.common.IFileHandle;
+import com.example.phoenix.nab.data.Download;
 import com.example.phoenix.nab.data.exception.NetworkConnectionException;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 
 import io.reactivex.Observable;
+import okhttp3.Response;
 
 /**
  * Created by Phoenix on 3/11/17.
  */
 
-public class RestApiImpl implements RestApi {
+public class RestApiImpl implements RestApi, IFileHandle {
 
     /**
      * Constructor of the class
@@ -27,8 +35,7 @@ public class RestApiImpl implements RestApi {
         return Instance.instance;
     }
 
-    @Override
-    public Observable<String> downloadFile(final String url) {
+    public Observable<String> downloadFileNon(final String url) {
         return Observable.create(emitter -> {
             if (isThereInternetConnection()) {
                 try {
@@ -48,6 +55,94 @@ public class RestApiImpl implements RestApi {
         });
     }
 
+    @Override
+    public Observable<Bitmap> fetchImage(String url) {
+        return Observable.create(emitter -> {
+            if (isThereInternetConnection()) {
+                try {
+                    Bitmap response = fetchImageFromApi(url);
+                    if (response != null) {
+                        emitter.onNext(response);
+                        emitter.onComplete();
+                    } else {
+                        emitter.onError(new NetworkConnectionException());
+                    }
+                } catch (Exception e) {
+                    emitter.onError(new NetworkConnectionException(e.getCause()));
+                }
+            } else {
+                emitter.onError(new NetworkConnectionException());
+            }
+        });
+    }
+
+    @Override
+    public Observable<Download> downloadFile(String url) {
+        return Observable.create(sub -> {
+                    InputStream input = null;
+                    OutputStream output = null;
+                    try {
+                        Response response = progressDownloadFileFromApi(url);
+                        if (response.isSuccessful()) {
+                            input = response.body().byteStream();
+                            long fileSize = response.body().contentLength();
+
+                            output = new FileOutputStream(FILE_DOWNLOAD_PATH);
+                            byte data[] = new byte[1024];
+                            int totalFileSize = (int) (fileSize / (Math.pow(1024, 1)));
+                            long total = 0;
+                            int count;
+                            while ((count = input.read(data)) != -1) {
+                                total += count;
+                                int progress = (int) ((total * 100) / fileSize);
+                                double current = Math.round(total / (Math.pow(1024, 1)));
+
+                                Download download = new Download();
+                                download.setTotalFileSize(totalFileSize);
+                                download.setProgress(progress);
+                                download.setCurrentFileSize((int) current);
+
+                                sub.onNext(download);
+                                output.write(data, 0, count);
+                            }
+                            output.flush();
+                            output.close();
+                            input.close();
+                        }
+                    } catch (IOException e) {
+                        sub.onError(e);
+                    } finally {
+                        if (input != null) {
+                            try {
+                                input.close();
+                            } catch (IOException ioe) {
+                            }
+                        }
+                        if (output != null) {
+                            try {
+                                output.close();
+                            } catch (IOException e) {
+                            }
+                        }
+                    }
+                    sub.onComplete();
+                }
+        );
+    }
+
+    private Response progressDownloadFileFromApi(String url) throws MalformedURLException {
+        return ApiConnection.createGET(url).callDownloadFile();
+    }
+
+    private Bitmap fetchImageFromApi(String url) throws MalformedURLException {
+        return ApiConnection.createGET(url).callFetchImageSync();
+    }
+
+    public String downloadFileFromApi(String url) throws MalformedURLException {
+        return ApiConnection.createGET(url).callDownloadSync();
+
+    }
+
     /**
      * Checks if the device has any active internet connection.
      *
@@ -64,10 +159,6 @@ public class RestApiImpl implements RestApi {
         return isConnected;
     }
 
-    public String downloadFileFromApi(String url) throws MalformedURLException {
-        return ApiConnection.createGET(url).requestSyncCall();
-
-    }
 
     private static class Instance {
         static final RestApi instance = new RestApiImpl();
