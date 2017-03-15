@@ -43,7 +43,6 @@ public class GalleryFragment extends BaseFragment implements GalleryView, IFileH
     private String files;
     private int offset = 0;
     private JSONArray jsonArray;
-    private boolean isLoadMore;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
