@@ -17,8 +17,8 @@ import java.util.Map;
 
 public class GalleryActivity extends AppCompatActivity {
 
-    public static String EXTRA_TAB;
-    public static String EXTRA_FILE_MAP;
+    public static final String EXTRA_TAB = "EXTRA_TAB";
+    public static final String EXTRA_FILE_MAP = "EXTRA_FILE_MAP";
 
     private MainPagerAdapter mainPagerAdapter;
 
