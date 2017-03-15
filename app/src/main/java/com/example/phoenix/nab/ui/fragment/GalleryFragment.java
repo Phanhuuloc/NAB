@@ -12,9 +12,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.phoenix.nab.R;
-import com.example.phoenix.nab.common.DiskLruImageCache;
 import com.example.phoenix.nab.common.IFileHandle;
 import com.example.phoenix.nab.common.ReadJsonFile;
+import com.example.phoenix.nab.common.Utils;
 import com.example.phoenix.nab.data.ImgData;
 import com.example.phoenix.nab.ui.adapter.ImageAdapter;
 import com.example.phoenix.nab.ui.presenter.GalleryPresenter;
@@ -85,9 +85,9 @@ public class GalleryFragment extends BaseFragment implements GalleryView, IFileH
     }
 
     private void loadImage(JSONArray jsonArray) {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < jsonArray.length(); i++) {
             try {
-                presenter.fetchImage(jsonArray.getString(i), i);
+                presenter.fetchImage(jsonArray.getString(i), i, 150, 150);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -105,8 +105,13 @@ public class GalleryFragment extends BaseFragment implements GalleryView, IFileH
 
     @Override
     public void addImage(Bitmap result, String url, int pos) {
+        String key = Utils.generateBitmapKey(url);
         adapter.replace(result, url, pos);
     }
 
+    @Override
+    public void showImageError(int pos) {
+        adapter.setImageError(pos);
+    }
 
 }

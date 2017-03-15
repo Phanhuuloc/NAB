@@ -37,7 +37,7 @@ public class Utils {
 
     public static String generateBitmapKey(String url){
         String newString = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
-        String bitmapKey = newString.replaceAll("[\\-\\+\\.\\^:,]", "");
-        return bitmapKey;
+        String bitmapKey = newString.replaceAll("[^0-9a-zA-Z]+", "");
+        return bitmapKey.toLowerCase();
     }
 }

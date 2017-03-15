@@ -5,37 +5,45 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.os.Bundle;
-import android.util.FloatMath;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.example.phoenix.nab.R;
-import com.example.phoenix.nab.common.DiskLruImageCache;
+import com.example.phoenix.nab.ui.ImageDetailView;
+import com.example.phoenix.nab.ui.presenter.ImageViewPresenter;
 
-public class ImageViewActivity extends Activity {
+public class ImageViewActivity extends Activity implements ImageDetailView {
     public static final String TAG = ImageViewActivity.class.getSimpleName();
-    ImageView imageView;
+    public static final String BITMAP = "BITMAP";
+    public static final String BITMAP_URL = "BITMAP_URL";
     public static final String KEY_BITMAP = "KEY_BITMAP";
-    private String keyBitmap;
-    private Bitmap imageBitmap;
-
-    // These matrices will be used to move and zoom image
-    Matrix matrix = new Matrix();
-    Matrix savedMatrix = new Matrix();
-
     // We can be in one of these 3 states
     static final int NONE = 0;
     static final int DRAG = 1;
     static final int ZOOM = 2;
+    ImageView imageView;
+    // These matrices will be used to move and zoom image
+    Matrix matrix = new Matrix();
+    Matrix savedMatrix = new Matrix();
+    ImageViewPresenter presenter;
     int mode = NONE;
-
     // Remember some things for zooming
     PointF start = new PointF();
     PointF mid = new PointF();
     float oldDist = 1f;
     String savedItemClicked;
+    private String keyBitmap;
+    private Bitmap bitmaps;
+    private String bitmapUrl;
+    private LinearLayout progressLayout;
+    private TextView progressText;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +53,8 @@ public class ImageViewActivity extends Activity {
     }
 
     private void init() {
+        presenter = new ImageViewPresenter();
+        presenter.setView(this);
         initData();
         initView();
         bindEvent();
@@ -52,7 +62,6 @@ public class ImageViewActivity extends Activity {
 
     private void bindEvent() {
         imageView.setOnTouchListener((v, event) -> {
-            // TODO Auto-generated method stub
 
             ImageView view = (ImageView) v;
             dumpEvent(event);
@@ -150,13 +159,35 @@ public class ImageViewActivity extends Activity {
     private void initData() {
         Bundle bundle = getIntent().getExtras();
         if (null != bundle) {
-            keyBitmap = bundle.getString(KEY_BITMAP);
+//            keyBitmap = bundle.getString(KEY_BITMAP);
+//            bitmaps = bundle.getParcelable(BITMAP);
+            bitmapUrl = bundle.getString(BITMAP_URL);
+
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int height = displayMetrics.heightPixels;
+            int width = displayMetrics.widthPixels;
+
+            presenter.fetchImage(bitmapUrl, width, height);
         }
     }
 
     private void initView() {
         imageView = (ImageView) findViewById(R.id.image_view);
-        imageBitmap = DiskLruImageCache.getInstance().getBitmap(keyBitmap);
-        imageView.setImageBitmap(imageBitmap);
+        progressLayout = (LinearLayout) findViewById(R.id.progress_layout);
+        progressText = (TextView) findViewById(R.id.progress_text);
+        progressBar = (ProgressBar) findViewById(R.id.progress);
+    }
+
+    @Override
+    public void renderImage(Bitmap value) {
+        progressLayout.setVisibility(View.GONE);
+        imageView.setImageBitmap(value);
+    }
+
+    @Override
+    public void showImageError() {
+        progressBar.setVisibility(View.GONE);
+        progressText.setText("Download image error!!!");
     }
 }

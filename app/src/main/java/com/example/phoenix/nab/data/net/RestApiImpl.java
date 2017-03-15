@@ -2,10 +2,10 @@ package com.example.phoenix.nab.data.net;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.example.phoenix.nab.common.BitmapUtils;
 import com.example.phoenix.nab.common.IFileHandle;
 import com.example.phoenix.nab.data.Download;
 import com.example.phoenix.nab.data.exception.NetworkConnectionException;
@@ -35,7 +35,7 @@ public class RestApiImpl implements RestApi, IFileHandle {
     }
 
     @Override
-    public Observable<Bitmap> fetchImage(String url) {
+    public Observable<Bitmap> fetchImage(String url, int reqWidth, int reqHeight) {
         return Observable.create(emitter -> {
             if (isThereInternetConnection()) {
                 try {
@@ -43,15 +43,17 @@ public class RestApiImpl implements RestApi, IFileHandle {
                     if (response.isSuccessful()) {
                         InputStream inputStream = response.body().byteStream();
 
-                        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, 8192);
-                        Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream);
+                        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, 4 * 1024);
+//                        Bitmap bitmap  = BitmapFactory.decodeStream(bufferedInputStream);
+                        Bitmap bitmap = BitmapUtils.decodeSampledBitmapFromStream(bufferedInputStream,
+                                reqWidth, reqHeight);
                         emitter.onNext(bitmap);
                         emitter.onComplete();
                     } else {
                         emitter.onError(new NetworkConnectionException());
                     }
                 } catch (Exception e) {
-                    emitter.onError(new NetworkConnectionException(e.getCause()));
+                    emitter.onError(e);
                 }
             } else {
                 emitter.onError(new NetworkConnectionException());

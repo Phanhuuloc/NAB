@@ -8,4 +8,6 @@ import android.graphics.Bitmap;
 
 public interface GalleryView {
     void addImage(Bitmap result, String url, int pos);
+
+    void showImageError(int pos);
 }

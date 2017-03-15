@@ -19,5 +19,5 @@ public interface RestApi {
 
     Observable<Download> downloadFile(final String url);
 
-    Observable<Bitmap> fetchImage(final String url);
+    Observable<Bitmap> fetchImage(final String url, int reqWidth, int reqHeight);
 }

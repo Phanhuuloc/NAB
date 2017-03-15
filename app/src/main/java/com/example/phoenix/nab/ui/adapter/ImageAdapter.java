@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.phoenix.nab.NABApplication;
 import com.example.phoenix.nab.R;
 import com.example.phoenix.nab.common.DiskLruImageCache;
 import com.example.phoenix.nab.common.Utils;
@@ -19,6 +20,9 @@ import com.example.phoenix.nab.ui.viewholder.ImageViewHolder;
 import com.example.phoenix.nab.ui.viewholder.ProgressViewHolder;
 
 import java.util.List;
+
+import static com.example.phoenix.nab.common.IFileHandle.BASE_CACHE_PATH;
+import static com.example.phoenix.nab.common.IFileHandle.SEPERATOR;
 
 /**
  * Created by Phoenix on 3/14/17.
@@ -70,11 +74,11 @@ public class ImageAdapter extends RecyclerView.Adapter {
         ImgData item = items.get(position);
         if (holder instanceof ImageViewHolder) {
             ImageViewHolder viewHolder = (ImageViewHolder) holder;
-            viewHolder.imgItem.setImageBitmap(DiskLruImageCache.getInstance().getBitmap(item.getBitmapKey()));
+            viewHolder.imgItem.setImageBitmap(item.getBitmap());
             viewHolder.imgItem.setOnClickListener(view -> {
                 Bundle bundle = new Bundle();
-                bundle.putString(ImageViewActivity.KEY_BITMAP,item.getBitmapKey());
-                BaseActivity.start(viewHolder.context, ImageViewActivity.class,bundle);
+                bundle.putString(ImageViewActivity.BITMAP_URL, item.getBitmapUrl());
+                BaseActivity.start(viewHolder.context, ImageViewActivity.class, bundle);
             });
         } else if (holder instanceof ProgressViewHolder) {
             ProgressViewHolder viewHolder = (ProgressViewHolder) holder;
@@ -100,8 +104,17 @@ public class ImageAdapter extends RecyclerView.Adapter {
 
     public void replace(Bitmap result, String url, int pos) {
         String key = Utils.generateBitmapKey(url);
-        DiskLruImageCache.getInstance().put(key,result);
+        DiskLruImageCache cache = new DiskLruImageCache(NABApplication.get(),
+                BASE_CACHE_PATH + SEPERATOR, 100, Bitmap.CompressFormat.JPEG, 60);
+        cache.put(key, result);
+        items.get(pos).setBitmap(cache.getBitmap(key));
         items.get(pos).setBitmapKey(key);
+        items.get(pos).setBitmapUrl(url);
         notifyDataSetChanged();
+    }
+
+    public void setImageError(int pos) {
+        this.items.get(pos).setError(true);
+        notifyItemChanged(pos);
     }
 }

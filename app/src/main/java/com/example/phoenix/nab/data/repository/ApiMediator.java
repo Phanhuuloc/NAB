@@ -25,7 +25,7 @@ public class ApiMediator {
         return this.restApi.downloadFile(url);
     }
 
-    public Observable<Bitmap> fetchImage(String url) {
-        return this.restApi.fetchImage(url);
+    public Observable<Bitmap> fetchImage(String url, int reqWidth, int reqHeight) {
+        return this.restApi.fetchImage(url, reqWidth, reqHeight);
     }
 }

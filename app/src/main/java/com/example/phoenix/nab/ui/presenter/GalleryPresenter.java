@@ -1,6 +1,7 @@
 package com.example.phoenix.nab.ui.presenter;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import com.example.phoenix.nab.domain.interactor.DefaultObserver;
 import com.example.phoenix.nab.domain.interactor.FetchImageUseCase;
@@ -11,6 +12,7 @@ import com.example.phoenix.nab.ui.view.GalleryView;
  */
 
 public class GalleryPresenter implements Presenter {
+    public static final String TAG = GalleryPresenter.class.getSimpleName();
     private final FetchImageUseCase fetchImageUseCase;
     private GalleryView view;
 
@@ -37,21 +39,23 @@ public class GalleryPresenter implements Presenter {
         this.view = view;
     }
 
-    public void fetchImage(String url, int pos) {
-        fetchImageUseCase.execute(new GetBrandIndexObserver(url, pos), FetchImageUseCase.Params.forFetchImg(url));
+    public void fetchImage(String url, int pos, int reqWidth, int reqHeight) {
+        fetchImageUseCase.execute(new GetImageObserver(url, pos),
+                FetchImageUseCase.Params.forFetchImg(url, reqWidth, reqHeight));
     }
 
-    private class GetBrandIndexObserver extends DefaultObserver<Bitmap> {
+    private class GetImageObserver extends DefaultObserver<Bitmap> {
         private final String url;
         private final int pos;
 
-        public GetBrandIndexObserver(String url, int pos) {
+        public GetImageObserver(String url, int pos) {
             this.url = url;
             this.pos = pos;
         }
 
         @Override
         public void onNext(Bitmap result) {
+            Log.i(TAG, "Load bitmap:" + result.toString());
             view.addImage(result, url, pos);
         }
 
@@ -61,7 +65,8 @@ public class GalleryPresenter implements Presenter {
 
         @Override
         public void onError(Throwable exception) {
-
+            Log.e(TAG, exception.toString());
+            view.showImageError(pos);
         }
     }
 }

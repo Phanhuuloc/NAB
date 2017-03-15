@@ -24,18 +24,23 @@ public class FetchImageUseCase extends UseCase<Bitmap, FetchImageUseCase.Params>
     @Override
     Observable<Bitmap> buildUseCaseObservable(Params params) {
         AppUtils.checkNotNull(params);
-        return apiMediator.fetchImage(params.url);
+        return apiMediator.fetchImage(params.url, params.reqWidth, params.reqHeight);
     }
 
     public static class Params {
         private final String url;
+        private final int reqWidth;
+        private final int reqHeight;
 
-        public Params(String url) {
+
+        public Params(String url, int reqWidth, int reqHeight) {
             this.url = url;
+            this.reqWidth = reqWidth;
+            this.reqHeight = reqHeight;
         }
 
-        public static Params forFetchImg(String url) {
-            return new Params(url);
+        public static Params forFetchImg(String url, int reqWidth, int reqHeight) {
+            return new Params(url, reqWidth, reqHeight);
         }
     }
 }
