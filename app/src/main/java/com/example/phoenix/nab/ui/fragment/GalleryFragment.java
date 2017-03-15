@@ -114,4 +114,9 @@ public class GalleryFragment extends BaseFragment implements GalleryView, IFileH
         adapter.setImageError(pos);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        presenter.destroy();
+    }
 }

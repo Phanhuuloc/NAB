@@ -159,8 +159,6 @@ public class ImageViewActivity extends Activity implements ImageDetailView {
     private void initData() {
         Bundle bundle = getIntent().getExtras();
         if (null != bundle) {
-//            keyBitmap = bundle.getString(KEY_BITMAP);
-//            bitmaps = bundle.getParcelable(BITMAP);
             bitmapUrl = bundle.getString(BITMAP_URL);
 
             DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -189,5 +187,11 @@ public class ImageViewActivity extends Activity implements ImageDetailView {
     public void showImageError() {
         progressBar.setVisibility(View.GONE);
         progressText.setText("Download image error!!!");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        presenter.destroy();
     }
 }

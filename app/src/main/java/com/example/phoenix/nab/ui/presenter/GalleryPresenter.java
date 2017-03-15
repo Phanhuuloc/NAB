@@ -32,7 +32,8 @@ public class GalleryPresenter implements Presenter {
 
     @Override
     public void destroy() {
-
+        view = null;
+        fetchImageUseCase.dispose();
     }
 
     public void setView(GalleryView view) {

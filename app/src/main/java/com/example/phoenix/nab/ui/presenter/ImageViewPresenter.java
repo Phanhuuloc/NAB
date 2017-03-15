@@ -32,7 +32,8 @@ public class ImageViewPresenter implements Presenter {
 
     @Override
     public void destroy() {
-
+        this.view = null;
+        fetchImageUseCase.dispose();
     }
 
     public void fetchImage(String bitmapUrl, int width, int height) {
