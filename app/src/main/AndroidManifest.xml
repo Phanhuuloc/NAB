@@ -25,7 +25,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activity.BaseTabActivity" />
         <activity
             android:name=".ui.activity.GalleryActivity"
             android:label="@string/title_activity_gallery"
@@ -36,7 +35,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activity.ImageViewActivity"></activity>
+        <activity android:name=".ui.activity.ImageViewActivity" />
     </application>
 
 </manifest>

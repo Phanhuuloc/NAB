@@ -15,13 +15,8 @@ import android.support.v7.app.AppCompatActivity;
  */
 public abstract class BaseActivity extends AppCompatActivity {
 
-
-//    Navigator navigator;
-
-//    private UserComponent userComponent;
-
-    public static void start(Context context, Class<?> cls, Bundle bundle) {
-        Intent intent = new Intent(context, cls);
+    public static <T extends Activity> void start(Context context, Class<T> clazz, Bundle bundle) {
+        Intent intent = new Intent(context, clazz);
         if (null != bundle) {
             intent.putExtras(bundle);
         }
@@ -31,7 +26,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        this.getApplicationComponent().inject(this);
     }
 
     /**
@@ -47,33 +41,4 @@ public abstract class BaseActivity extends AppCompatActivity {
         fragmentTransaction.commit();
     }
 
-    /**
-     * Get the Main Application component for dependency injection.
-     *
-     * @return {@link com.fernandocejas.android10.sample.presentation.internal.di.components.ApplicationComponent}
-     */
-//    protected ApplicationComponent getApplicationComponent() {
-//        return ((AndroidApplication) getApplication()).getApplicationComponent();
-//    }
-
-    /**
-     * Get an Activity module for dependency injection.
-     *
-     * @return {@link com.fernandocejas.android10.sample.presentation.internal.di.modules.ActivityModule}
-     */
-//    protected ActivityModule getActivityModule() {
-//        return new ActivityModule(this);
-//    }
-
-//    protected void initializeInjector() {
-//        this.userComponent = DaggerUserComponent.builder()
-//                .applicationComponent(getApplicationComponent())
-//                .activityModule(getActivityModule())
-//                .build();
-//
-//    }
-
-//    public UserComponent getUserComponent() {
-//        return userComponent;
-//    }
 }

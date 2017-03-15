@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.example.phoenix.nab.BuildConfig;
+import com.example.phoenix.nab.NABApplication;
 import com.jakewharton.disklrucache.DiskLruCache;
 
 import java.io.BufferedInputStream;
@@ -17,8 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-
-public class DiskLruImageCache {
+public class DiskLruImageCache implements IFileHandle {
     private static final int APP_VERSION = 1;
     private static final int VALUE_COUNT = 1;
     private static final String TAG = "DiskLruImageCache";
@@ -36,6 +36,10 @@ public class DiskLruImageCache {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static DiskLruImageCache getInstance() {
+        return Instance.instance;
     }
 
     private boolean writeBitmapToFile(Bitmap bitmap, DiskLruCache.Editor editor)
@@ -163,6 +167,11 @@ public class DiskLruImageCache {
 
     public File getCacheFolder() {
         return mDiskCache.getDirectory();
+    }
+
+    private static class Instance {
+        static final DiskLruImageCache instance = new DiskLruImageCache(NABApplication.get(),
+                BASE_CACHE_PATH + SEPERATOR, 100, Bitmap.CompressFormat.JPEG, 60);
     }
 
 }

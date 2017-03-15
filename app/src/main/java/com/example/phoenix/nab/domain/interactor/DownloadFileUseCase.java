@@ -1,6 +1,7 @@
 package com.example.phoenix.nab.domain.interactor;
 
 import com.example.phoenix.nab.common.AppUtils;
+import com.example.phoenix.nab.data.Download;
 import com.example.phoenix.nab.data.net.RestApiImpl;
 import com.example.phoenix.nab.data.repository.ApiMediator;
 
@@ -10,7 +11,7 @@ import io.reactivex.Observable;
  * Created by Phoenix on 3/11/17.
  */
 
-public class DownloadFileUseCase extends UseCase<String, DownloadFileUseCase.Params> {
+public class DownloadFileUseCase extends UseCase<Download, DownloadFileUseCase.Params> {
     private final ApiMediator apiMediator;
 
     public DownloadFileUseCase() {
@@ -19,7 +20,7 @@ public class DownloadFileUseCase extends UseCase<String, DownloadFileUseCase.Par
     }
 
     @Override
-    Observable<String> buildUseCaseObservable(Params params) {
+    Observable<Download> buildUseCaseObservable(Params params) {
         AppUtils.checkNotNull(params);
         return apiMediator.downloadFile(params.url);
     }

@@ -8,12 +8,11 @@ import java.io.File;
 
 
 public class Utils {
+
     public static final int IO_BUFFER_SIZE = 8 * 1024;
 
     private Utils() {
     }
-
-    ;
 
     public static boolean isExternalStorageRemovable() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
@@ -34,5 +33,11 @@ public class Utils {
 
     public static boolean hasExternalCacheDir() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO;
+    }
+
+    public static String generateBitmapKey(String url){
+        String newString = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+        String bitmapKey = newString.replaceAll("[^0-9a-zA-Z]+", "");
+        return bitmapKey.toLowerCase();
     }
 }
