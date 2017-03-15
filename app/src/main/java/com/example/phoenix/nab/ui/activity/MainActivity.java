@@ -34,15 +34,10 @@ public class MainActivity extends BaseActivity implements DownloadFileView, IFil
     public static final String TAG = MainActivity.class.getSimpleName();
 
     DownloadFilePresenter presenter;
-    @BindView(R.id.url_text)
     EditText urlText;
-    @BindView(R.id.btn_download)
     AppCompatButton btnDownload;
-    @BindView(R.id.progress)
     ProgressBar progress;
-    @BindView(R.id.progress_text)
     TextView progressText;
-    @BindView(R.id.coordinatorLayout)
     CoordinatorLayout coordinatorLayout;
     private String file;
 
@@ -70,6 +65,14 @@ public class MainActivity extends BaseActivity implements DownloadFileView, IFil
     private void init() {
         initPresenter();
         initView();
+        bindEvent();
+    }
+
+    private void bindEvent() {
+        btnDownload.setOnClickListener(view -> {
+            String url = urlText.getText().toString();
+            presenter.downloadFile(url);
+        });
     }
 
     private void initPresenter() {
@@ -78,13 +81,10 @@ public class MainActivity extends BaseActivity implements DownloadFileView, IFil
     }
 
     private void initView() {
-
-    }
-
-    @OnClick(R.id.btn_download)
-    public void onClick() {
-        String url = urlText.getText().toString();
-        presenter.downloadFile(url);
+        urlText = (EditText) findViewById(R.id.url_text);
+        btnDownload = (AppCompatButton) findViewById(R.id.btn_download);
+        progress = (ProgressBar) findViewById(R.id.progress);
+        progressText = (TextView) findViewById(R.id.progress_text);
     }
 
     @Override

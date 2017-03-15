@@ -1,5 +1,6 @@
 package com.example.phoenix.nab.ui.viewholder;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
@@ -12,11 +13,13 @@ import com.example.phoenix.nab.R;
  */
 
 public class ImageViewHolder extends RecyclerView.ViewHolder {
+    public Context context;
     public ImageView imgItem;
     public LinearLayout imgLayout;
 
     public ImageViewHolder(View itemView) {
         super(itemView);
+        this.context = itemView.getContext();
         imgItem = (ImageView) itemView.findViewById(R.id.img_item);
         imgLayout = (LinearLayout) itemView.findViewById(R.id.img_layout);
     }

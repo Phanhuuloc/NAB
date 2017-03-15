@@ -1,22 +1,20 @@
 package com.example.phoenix.nab.data;
 
-import android.graphics.Bitmap;
-
 /**
  * Created by Phoenix on 3/14/17.
  */
 
 public class ImgData {
-    Bitmap bitmap;
+    String bitmapKey;
     Download status;
     boolean isError;
 
-    public Bitmap getBitmap() {
-        return bitmap;
+    public String getBitmapKey() {
+        return bitmapKey;
     }
 
-    public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
+    public void setBitmapKey(String bitmapKey) {
+        this.bitmapKey = bitmapKey;
     }
 
     public Download getStatus() {

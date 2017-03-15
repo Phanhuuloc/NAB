@@ -34,4 +34,10 @@ public class Utils {
     public static boolean hasExternalCacheDir() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO;
     }
+
+    public static String generateBitmapKey(String url){
+        String newString = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+        String bitmapKey = newString.replaceAll("[\\-\\+\\.\\^:,]", "");
+        return bitmapKey;
+    }
 }

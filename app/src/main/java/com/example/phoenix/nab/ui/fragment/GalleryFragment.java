@@ -105,10 +105,8 @@ public class GalleryFragment extends BaseFragment implements GalleryView, IFileH
 
     @Override
     public void addImage(Bitmap result, String url, int pos) {
-        String newString = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
-        String key = newString.replaceAll("[\\-\\+\\.\\^:,]", "");
-        Log.i(TAG, key);
-        DiskLruImageCache.getInstance().put(key, result);
-        adapter.replace(DiskLruImageCache.getInstance().getBitmap(key), pos);
+        adapter.replace(result, url, pos);
     }
+
+
 }

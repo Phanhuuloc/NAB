@@ -2,13 +2,18 @@ package com.example.phoenix.nab.ui.adapter;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.phoenix.nab.R;
+import com.example.phoenix.nab.common.DiskLruImageCache;
+import com.example.phoenix.nab.common.Utils;
 import com.example.phoenix.nab.data.ImgData;
+import com.example.phoenix.nab.ui.activity.BaseActivity;
+import com.example.phoenix.nab.ui.activity.ImageViewActivity;
 import com.example.phoenix.nab.ui.viewholder.ErrorViewHolder;
 import com.example.phoenix.nab.ui.viewholder.ImageViewHolder;
 import com.example.phoenix.nab.ui.viewholder.ProgressViewHolder;
@@ -38,7 +43,7 @@ public class ImageAdapter extends RecyclerView.Adapter {
         ImgData item = items.get(position);
         if (item.isError()) {
             return TYPE_ERROR;
-        } else if (null != item.getBitmap()) {
+        } else if (null != item.getBitmapKey()) {
             return TYPE_DATA;
         } else return TYPE_PROGRESS;
     }
@@ -65,7 +70,12 @@ public class ImageAdapter extends RecyclerView.Adapter {
         ImgData item = items.get(position);
         if (holder instanceof ImageViewHolder) {
             ImageViewHolder viewHolder = (ImageViewHolder) holder;
-            viewHolder.imgItem.setImageBitmap(item.getBitmap());
+            viewHolder.imgItem.setImageBitmap(DiskLruImageCache.getInstance().getBitmap(item.getBitmapKey()));
+            viewHolder.imgItem.setOnClickListener(view -> {
+                Bundle bundle = new Bundle();
+                bundle.putString(ImageViewActivity.KEY_BITMAP,item.getBitmapKey());
+                BaseActivity.start(viewHolder.context, ImageViewActivity.class,bundle);
+            });
         } else if (holder instanceof ProgressViewHolder) {
             ProgressViewHolder viewHolder = (ProgressViewHolder) holder;
             if (item.getStatus() != null) {
@@ -88,8 +98,10 @@ public class ImageAdapter extends RecyclerView.Adapter {
         notifyDataSetChanged();
     }
 
-    public void replace(Bitmap result, int pos) {
-        items.get(pos).setBitmap(result);
+    public void replace(Bitmap result, String url, int pos) {
+        String key = Utils.generateBitmapKey(url);
+        DiskLruImageCache.getInstance().put(key,result);
+        items.get(pos).setBitmapKey(key);
         notifyDataSetChanged();
     }
 }
