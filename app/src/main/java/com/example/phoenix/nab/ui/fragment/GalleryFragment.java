@@ -17,6 +17,7 @@ import com.example.phoenix.nab.common.ReadJsonFile;
 import com.example.phoenix.nab.common.Utils;
 import com.example.phoenix.nab.data.ImgData;
 import com.example.phoenix.nab.ui.adapter.ImageAdapter;
+import com.example.phoenix.nab.ui.handler.EndlessRecyclerViewScrollListener;
 import com.example.phoenix.nab.ui.presenter.GalleryPresenter;
 import com.example.phoenix.nab.ui.view.GalleryView;
 
@@ -34,11 +35,15 @@ public class GalleryFragment extends BaseFragment implements GalleryView, IFileH
 
     public static final String TAG = GalleryFragment.class.getSimpleName();
     public static final String FILE = "FILE";
+    public static final int LIMIT = 10;
 
     ImageAdapter adapter;
     RecyclerView recyclerView;
     GalleryPresenter presenter;
     private String files;
+    private int offset = 0;
+    private JSONArray jsonArray;
+    private boolean isLoadMore;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,9 +61,25 @@ public class GalleryFragment extends BaseFragment implements GalleryView, IFileH
     }
 
     private void initialize() {
+        offset = 0;
         presenter.setView(this);
         initData();
         initializeRecyclerView();
+        bindScrollEvent();
+    }
+
+    private void bindScrollEvent() {
+        StaggeredGridLayoutManager slm = (StaggeredGridLayoutManager) recyclerView.getLayoutManager();
+        recyclerView.addOnScrollListener(new EndlessRecyclerViewScrollListener(slm) {
+            @Override
+            public void onScrolled(RecyclerView view, int dx, int dy) {
+                super.onScrolled(view, dx, dy);
+                if (getLastVisibleItemPosition() >= offset + 10) {
+                    offset += LIMIT;
+                    loadImage(jsonArray, offset);
+                }
+            }
+        });
     }
 
     private void initData() {
@@ -73,19 +94,20 @@ public class GalleryFragment extends BaseFragment implements GalleryView, IFileH
     protected void lazyFetchData() {
         super.lazyFetchData();
         if (null != files) {
-            JSONArray jsonArray = ReadJsonFile.arrayFrom(files);
+            jsonArray = ReadJsonFile.arrayFrom(files);
             List<ImgData> items = new ArrayList<>();
 
             for (int i = 0; i < jsonArray.length(); i++) {
                 items.add(new ImgData());
             }
             adapter.setItems(items);
-            loadImage(jsonArray);
+
+            loadImage(jsonArray, offset);
         }
     }
 
-    private void loadImage(JSONArray jsonArray) {
-        for (int i = 0; i < jsonArray.length(); i++) {
+    private void loadImage(JSONArray jsonArray, int offset) {
+        for (int i = offset; i < offset + LIMIT; i++) {
             try {
                 presenter.fetchImage(jsonArray.getString(i), i, 150, 150);
             } catch (JSONException e) {
