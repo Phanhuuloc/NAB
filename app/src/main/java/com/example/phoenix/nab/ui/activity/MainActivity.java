@@ -2,6 +2,7 @@ package com.example.phoenix.nab.ui.activity;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -16,19 +17,18 @@ import android.widget.TextView;
 import com.example.phoenix.nab.R;
 import com.example.phoenix.nab.common.Decompress;
 import com.example.phoenix.nab.common.IFileHandle;
-import com.example.phoenix.nab.common.ReadJsonFile;
 import com.example.phoenix.nab.data.Download;
 import com.example.phoenix.nab.ui.presenter.DownloadFilePresenter;
 import com.example.phoenix.nab.ui.view.DownloadFileView;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 public class MainActivity extends BaseActivity implements DownloadFileView, IFileHandle {
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -90,25 +90,52 @@ public class MainActivity extends BaseActivity implements DownloadFileView, IFil
     @Override
     public void handleZipFile(String zipFile) {
         this.file = zipFile;
-//        unzipFile(file);
+        unzipFile(file);
 
         File fileDirectory = new File(REAL_FILE_UNZIP_PATH);
         List<File> files = collectFiles(fileDirectory);
 
         int count = 0;
         HashMap<String, String> map = new HashMap<>();
-        for (File file : files) {
-            count++;
-            String fileName = file.getName();
-            String fromFile = ReadJsonFile.read(file);
-            Log.i(TAG, String.format("file %d: %s", count, fromFile));
-            map.put(fileName, fromFile);
+//        for (File file : files) {
+//            count++;
+//            String fileName = file.getName();
+//            String fromFile = ReadJsonFile.read(file);
+//            Log.i(TAG, String.format("file %d: %s", count, fromFile));
+//            map.put(fileName, fromFile);
+//        }
+
+        AssetManager am = getAssets();
+        try {
+            String[] jsons = am.list("JSON");
+            for (String j : jsons) {
+                map.put(j, readJSONFromAsset(j));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
 
         Bundle bundle = new Bundle();
         bundle.putInt(GalleryActivity.EXTRA_TAB, count);
         bundle.putSerializable(GalleryActivity.EXTRA_FILE_MAP, map);
         BaseActivity.start(this, GalleryActivity.class, bundle);
+    }
+
+    public String readJSONFromAsset(String fileName) {
+        String json = null;
+        try {
+            InputStream is = getAssets().open("JSON/" + fileName);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
     }
 
     @Override
