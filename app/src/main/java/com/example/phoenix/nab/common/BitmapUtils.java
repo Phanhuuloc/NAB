@@ -6,26 +6,27 @@ import android.graphics.BitmapFactory;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Created by Ikorn Solutions Ltd,.. on 3/15/2017.
- */
-
 public class BitmapUtils {
 
-    public static Bitmap decodeSampledBitmapFromStream(InputStream in, int reqWidth, int reqHeight) throws IOException {
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
+    public static Bitmap decodeSampledBitmapFromStream(InputStream in, int reqWidth, int reqHeight) {
+        try {
+            // First decode with inJustDecodeBounds=true to check dimensions
+            final BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
 
-        in.mark(8 * 1024);
-        BitmapFactory.decodeStream(in, null, options);
-        in.reset();
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+            in.mark(8 * 1024);
+            BitmapFactory.decodeStream(in, null, options);
+            in.reset();
+            // Calculate inSampleSize
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
 
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeStream(in, null, options);
+            // Decode bitmap with inSampleSize set
+            options.inJustDecodeBounds = false;
+            return BitmapFactory.decodeStream(in, null, options);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {

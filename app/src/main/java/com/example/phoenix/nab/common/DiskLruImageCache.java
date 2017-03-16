@@ -13,7 +13,6 @@ import com.jakewharton.disklrucache.DiskLruCache;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,7 +42,7 @@ public class DiskLruImageCache implements IFileHandle {
     }
 
     private boolean writeBitmapToFile(Bitmap bitmap, DiskLruCache.Editor editor)
-            throws IOException, FileNotFoundException {
+            throws IOException {
         OutputStream out = null;
         try {
             out = new BufferedOutputStream(editor.newOutputStream(0), Utils.IO_BUFFER_SIZE);
